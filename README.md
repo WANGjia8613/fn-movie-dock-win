@@ -33,3 +33,9 @@ src/MovieDock.App     # WPF 界面（检索 / 任务 / 设置 三页）
 tests/                # 80 项 xUnit 回归测试（移植自 Python 版 scripts/unit_checks.py）
 dotnet-env.sh         # 本机构建环境脚本（NuGet 离线还原等环境修复）
 ```
+
+## 许可证
+
+本项目以 **MIT** 许可证发布，见 [LICENSE](LICENSE)：可自由使用、修改、再分发（保留版权与许可声明）。
+
+许可证与 Python 版 [fn-movie-dock](https://github.com/WANGjia8613/fn-movie-dock) 保持一致。
