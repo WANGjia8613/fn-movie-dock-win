@@ -1,0 +1,204 @@
+<Window x:Class="MovieDock.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="片坞 Movie Dock" Width="1120" Height="720" MinWidth="920" MinHeight="600"
+        WindowStartupLocation="CenterScreen">
+    <TabControl x:Name="MainTabs" Margin="8">
+
+        <!-- ==================== 检索 ==================== -->
+        <TabItem Header="检索片源">
+            <Grid Margin="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="片名" VerticalAlignment="Center" />
+                    <TextBox x:Name="QueryBox" Width="220" Margin="6,0" KeyDown="QueryBox_KeyDown" />
+                    <TextBlock Text="年份" VerticalAlignment="Center" />
+                    <TextBox x:Name="YearBox" Width="60" Margin="6,0" />
+                    <TextBlock Text="清晰度" VerticalAlignment="Center" />
+                    <ComboBox x:Name="QualityCombo" Width="90" Margin="6,0" SelectedIndex="0">
+                        <ComboBoxItem Content="全部" />
+                        <ComboBoxItem Content="2160p" />
+                        <ComboBoxItem Content="1080p" />
+                        <ComboBoxItem Content="720p" />
+                    </ComboBox>
+                    <Button x:Name="SearchButton" Content="搜索" Width="72" Click="Search_Click" />
+                    <Button x:Name="CancelSearchButton" Content="取消" Width="56" Margin="6,0,0,0"
+                            IsEnabled="False" Click="CancelSearch_Click" />
+                    <TextBlock x:Name="SearchHint" Text="" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="#666666" />
+                </StackPanel>
+
+                <ListBox x:Name="WarningsBox" Grid.Row="1" MaxHeight="72" Margin="0,6,0,6"
+                         BorderThickness="0" Background="#FFF8E1" />
+
+                <DataGrid x:Name="ResultsGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True"
+                          SelectionMode="Single" GridLinesVisibility="Horizontal" RowHeight="26"
+                          LoadingRow="ResultsGrid_LoadingRow" MouseDoubleClick="ResultsGrid_DoubleClick">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="评分" Width="56" Binding="{Binding Score, StringFormat={}{0:0.#}}" />
+                        <DataGridTextColumn Header="标题" Width="3*" Binding="{Binding Title}" />
+                        <DataGridTextColumn Header="来源" Width="80" Binding="{Binding Source}" />
+                        <DataGridTextColumn Header="清晰度" Width="64" Binding="{Binding Quality}" />
+                        <DataGridTextColumn Header="体积" Width="90" Binding="{Binding Size}" />
+                        <DataGridTextColumn Header="做种" Width="56" Binding="{Binding Seeds}" />
+                        <DataGridTextColumn Header="标签" Width="150" Binding="{Binding Tags, Converter={StaticResource ListToString}}" />
+                        <DataGridTextColumn Header="备注" Width="2*" Binding="{Binding Note}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
+                    <Button Content="下载选中" Width="80" Click="DownloadSelected_Click" />
+                    <TextBlock Text="   或粘贴磁力/直链：" VerticalAlignment="Center" />
+                    <TextBox x:Name="ManualUrlBox" Width="420" Margin="6,0" />
+                    <Button Content="添加下载" Width="80" Click="AddManual_Click" />
+                </StackPanel>
+            </Grid>
+        </TabItem>
+
+        <!-- ==================== 任务 ==================== -->
+        <TabItem Header="下载任务">
+            <Grid Margin="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <DockPanel>
+                    <TextBlock x:Name="Aria2StatusText" Text="aria2 状态检测中…" DockPanel.Dock="Right"
+                               VerticalAlignment="Center" Foreground="#666666" />
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="暂停" Width="64" Margin="0,0,6,0" Click="Pause_Click" />
+                        <Button Content="继续" Width="64" Margin="0,0,6,0" Click="Resume_Click" />
+                        <Button Content="打开目录" Width="72" Margin="0,0,6,0" Click="OpenFolder_Click" />
+                        <Button Content="重试字幕" Width="72" Margin="0,0,6,0" Click="RetrySubtitle_Click" />
+                        <Button Content="删除" Width="64" Margin="0,0,6,0" Click="Remove_Click" />
+                        <Button Content="删除含文件" Width="84" Margin="0,0,6,0" Click="RemoveWithFiles_Click" />
+                        <Button Content="清空已完成" Width="84" Click="ClearCompleted_Click" />
+                    </StackPanel>
+                </DockPanel>
+
+                <DataGrid x:Name="TasksGrid" Grid.Row="1" Margin="0,6,0,6" AutoGenerateColumns="False"
+                          IsReadOnly="True" SelectionMode="Single" GridLinesVisibility="Horizontal" RowHeight="28">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="标题" Width="2.5*" Binding="{Binding Title}" />
+                        <DataGridTextColumn Header="集数" Width="56" Binding="{Binding Episode}" />
+                        <DataGridTemplateColumn Header="状态" Width="76">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock VerticalAlignment="Center"
+                                               Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                               Foreground="{Binding Status, Converter={StaticResource StatusBrush}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="进度" Width="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid VerticalAlignment="Center">
+                                        <ProgressBar Minimum="0" Maximum="100" Height="16" Value="{Binding Progress}" />
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontSize="10" Foreground="#333333"
+                                                   Text="{Binding Progress, StringFormat={}{0:0.0}%}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="速度" Width="90" Binding="{Binding DownloadSpeed}" />
+                        <DataGridTemplateColumn Header="已完成 / 总量" Width="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding CompletedLength}" />
+                                        <TextBlock Text=" / " />
+                                        <TextBlock Text="{Binding TotalLength}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="引擎" Width="56" Binding="{Binding Engine}" />
+                        <DataGridTemplateColumn Header="字幕" Width="72">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock VerticalAlignment="Center"
+                                               Text="{Binding SubtitleStatus, Converter={StaticResource StatusText}, ConverterParameter=sub}"
+                                               ToolTip="{Binding SubtitleNote}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="错误/说明" Width="*" Binding="{Binding Error}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StatusBar Grid.Row="2">
+                    <StatusBarItem>
+                        <TextBlock x:Name="TaskSummaryText" Text="" />
+                    </StatusBarItem>
+                </StatusBar>
+            </Grid>
+        </TabItem>
+
+        <!-- ==================== 设置 ==================== -->
+        <TabItem Header="设置">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="14" MaxWidth="660">
+                    <TextBlock Text="存储位置" FontWeight="Bold" FontSize="14" />
+                    <TextBlock Text="下载根目录（留空 = 系统「视频」库下的 MovieDock）" Margin="0,10,0,2" Foreground="#555555" />
+                    <DockPanel>
+                        <Button Content="浏览…" DockPanel.Dock="Right" Width="64" Click="BrowseDownload_Click" />
+                        <TextBox x:Name="DownloadRootBox" Margin="0,0,6,0" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Text="资料库目录（整理后的影视落到这里；留空 = 下载根目录/movies）" Margin="0,10,0,2" Foreground="#555555" />
+                    <DockPanel>
+                        <Button Content="浏览…" DockPanel.Dock="Right" Width="64" Click="BrowseLibrary_Click" />
+                        <TextBox x:Name="LibraryRootBox" Margin="0,0,6,0" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock Text="网络代理（如 http://127.0.0.1:7890，留空直连）" Margin="0,10,0,2" Foreground="#555555" />
+                    <TextBox x:Name="ProxyBox" />
+
+                    <Separator Margin="0,16" />
+                    <TextBlock Text="大模型（片名翻译 / 大模型检索，OpenAI 兼容接口）" FontWeight="Bold" FontSize="14" />
+                    <TextBlock Text="接口地址（如 https://api.openai.com/v1）" Margin="0,10,0,2" Foreground="#555555" />
+                    <TextBox x:Name="LlmUrlBox" />
+                    <TextBlock Text="API Key" Margin="0,10,0,2" Foreground="#555555" />
+                    <PasswordBox x:Name="LlmKeyBox" />
+                    <TextBlock Text="模型名" Margin="0,10,0,2" Foreground="#555555" />
+                    <DockPanel>
+                        <Button Content="测试连接" DockPanel.Dock="Right" Width="72" Click="LlmTest_Click" />
+                        <TextBox x:Name="LlmModelBox" Margin="0,0,6,0" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <TextBlock x:Name="LlmTestResult" Text="" Margin="0,4,0,0" Foreground="#1e8e3e" />
+
+                    <Separator Margin="0,16" />
+                    <TextBlock Text="功能开关" FontWeight="Bold" FontSize="14" />
+                    <CheckBox x:Name="SortByScoreCheck" Content="检索结果按评分排序（HDR/DoVi/做种数加权，最优候选高亮）" Margin="0,10,0,0" />
+                    <CheckBox x:Name="SubtitleEnabledCheck" Content="下载完成后自动匹配中文字幕（SubHD）" Margin="0,6,0,0" />
+                    <CheckBox x:Name="OrganizeEnabledCheck" Content="下载完成后自动整理入库（按模板改名/归档）" Margin="0,6,0,0" />
+
+                    <Separator Margin="0,16" />
+                    <TextBlock Text="检索源" FontWeight="Bold" FontSize="14" />
+                    <WrapPanel Margin="0,8,0,0">
+                        <CheckBox x:Name="ProvBuiltinCheck" Content="内置索引（TPB/YTS/DMHY）" Margin="0,0,16,6" />
+                        <CheckBox x:Name="ProvDemoCheck" Content="演示数据" Margin="0,0,16,6" />
+                        <CheckBox x:Name="ProvLlmCheck" Content="大模型检索" Margin="0,0,16,6" />
+                        <CheckBox x:Name="ProvQbitCheck" Content="qBittorrent 搜索" Margin="0,0,16,6" />
+                        <CheckBox x:Name="ProvCustomCheck" Content="自定义索引 API" Margin="0,0,16,6" />
+                    </WrapPanel>
+
+                    <Separator Margin="0,16" />
+                    <DockPanel Margin="0,0,0,6">
+                        <Button Content="保存设置" DockPanel.Dock="Right" Width="90" Click="Save_Click" />
+                        <TextBlock x:Name="SaveTip" Text="" VerticalAlignment="Center" Foreground="#1e8e3e" />
+                    </DockPanel>
+                    <TextBlock Text="配置文件：%APPDATA%\MovieDock\config.yaml（设置保存后立即生效）"
+                               Margin="0,4,0,24" Foreground="#999999" FontSize="11" />
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+    </TabControl>
+</Window>

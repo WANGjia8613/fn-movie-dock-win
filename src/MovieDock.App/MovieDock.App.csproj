@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>MovieDock.App</RootNamespace>
+    <AssemblyName>MovieDock</AssemblyName>
+    <Version>0.1.0</Version>
+    <Product>片坞 Movie Dock</Product>
+    <Description>片坞 Movie Dock — Windows 原生版，片源检索与下载</Description>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit>
+    <ApplicationIcon></ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MovieDock.Core\MovieDock.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>WANGjia8613</Authors>
+    <Company>Movie Dock</Company>
+  </PropertyGroup>
+</Project>

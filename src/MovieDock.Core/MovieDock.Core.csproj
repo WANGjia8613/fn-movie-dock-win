@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>MovieDock.Core</RootNamespace>
+    <Description>片坞 Movie Dock 核心逻辑：检索、下载、整理、配置（自 fn-movie-dock Python 版移植）</Description>
+    <!-- 离线环境：锁版本（浮动版本还原要联网查最新），关闭还原期漏洞审计 -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 单元测试需要触达 internal 成员（ToItem/ScoreSubFile/PollOnceAsync 等） -->
+    <InternalsVisibleTo Include="MovieDock.Core.Tests" />
+  </ItemGroup>
+</Project>
